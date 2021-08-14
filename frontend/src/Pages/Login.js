@@ -23,7 +23,6 @@ const Login = () => {
 				history.push("/");
 			},
 		};
-		console.log(config);
 		let sawo = new Sawo(config);
 		sawo.showForm();
 		if (localStorage.getItem("token")) {
@@ -33,9 +32,7 @@ const Login = () => {
 	return (
 		<div className='containerStyle'>
 			<section>
-				<h2 className='title'>MedGuide Login</h2>
-				<h2 className='title'>User Logged In : {isUserLoggedIn.toString()}</h2>
-
+				<h2 className='login-title'>MedGuide Login</h2>
 				{!isUserLoggedIn ? (
 					<div className='formContainer' id='sawo-container'></div>
 				) : (
