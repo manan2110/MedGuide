@@ -1,16 +1,16 @@
-import aiohttp
 import asyncio
-import environ
-import json
 import random
-from traceback import print_exc
-from django.conf import settings
-from django.http import HttpRequest, JsonResponse
 from django.db.models.query import QuerySet
+import environ
+import aiohttp
+import json
+from traceback import print_exc
+from django.http import HttpRequest, JsonResponse
+from django.conf import settings
 from django.core.serializers import serialize
+from rest_framework import status
 from asgiref.sync import sync_to_async
 from .models import *
-
 
 env = environ.Env()
 env.read_env(str(settings.BASE_DIR / ".env"))
@@ -20,7 +20,9 @@ map_my_india_secrets = env.list("MAP_MY_INDIA_SECRETS")
 map_my_india_idx = 0
 token_api = "/api/security/oauth/token"
 nearby_api = "/api/places/nearby/json"
-default_json_response = JsonResponse({"Forbidden": "wrong method"}, status=403)
+default_json_response = JsonResponse(
+    {"Forbidden": "wrong method"}, status=status.HTTP_403_FORBIDDEN
+)
 
 
 async def get_auth_header(session: aiohttp.ClientSession) -> str:
@@ -54,6 +56,11 @@ async def get_request_data(request: HttpRequest, method: str, **kwargs) -> dict:
     return data
 
 
+def is_authenticated(request: HttpRequest) -> bool:
+    """wrapper function for use with sync_to_async"""
+    return request.user.is_authenticated
+
+
 async def json_serializer(queryset: QuerySet) -> "list[dict]":
     qjsons_str = await sync_to_async(serialize)("json", queryset)
     qjsons = json.loads(qjsons_str)
@@ -61,11 +68,6 @@ async def json_serializer(queryset: QuerySet) -> "list[dict]":
         qjson.pop("model")
         qjson.update(qjson.pop("fields"))
     return qjsons
-
-
-def is_authenticated(request: HttpRequest) -> bool:
-    """wrapper function for use with sync_to_async"""
-    return request.user.is_authenticated
 
 
 # Create your views here.
@@ -84,7 +86,7 @@ async def cart_post(request: HttpRequest, cart: dict, _cart: Cart = None):
     if "Bad Request" in data:
         return JsonResponse(
             data,
-            status=400,
+            status=status.HTTP_400_BAD_REQUEST,
         )
     # check if item exists
     item_pk = data["id"]
@@ -92,7 +94,7 @@ async def cart_post(request: HttpRequest, cart: dict, _cart: Cart = None):
     if not await sync_to_async(items.exists)():
         return JsonResponse(
             {"Not Found": f"item with id {item_pk} not found"},
-            status=404,
+            status=status.HTTP_404_NOT_FOUND,
         )
     # check if amount is valid
     item_amount = data["amount"]
@@ -100,7 +102,7 @@ async def cart_post(request: HttpRequest, cart: dict, _cart: Cart = None):
     if item.amount < item_amount or item_amount < 0:
         return JsonResponse(
             {"Invalid range": f"{item.name} only {item.amount} available"},
-            status=416,
+            status=status.HTTP_416_REQUESTED_RANGE_NOT_SATISFIABLE,
         )
     # update cart
     item_in_cart = False
@@ -123,6 +125,7 @@ async def cart_post(request: HttpRequest, cart: dict, _cart: Cart = None):
                 "amount": item_amount,
                 "price": item.price,
                 "max_amount": item.amount,
+                "image_url": item.image_url,
             }
         )
     if _cart is None:
@@ -136,6 +139,7 @@ async def cart_post(request: HttpRequest, cart: dict, _cart: Cart = None):
 
 
 async def cart(request: HttpRequest):
+    print(request.POST.dict())
     try:
         # initialize cart in session
         if await sync_to_async(request.session.get)("cart") is None:
@@ -195,18 +199,18 @@ async def pharmacy_get_nearby(request: HttpRequest):
     if "Bad Request" in data:
         return JsonResponse(
             data,
-            status=400,
+            status=status.HTTP_400_BAD_REQUEST,
         )
     location = data["latitude"] + "," + data["longitude"]
     if nearby_pharmacies is not None:
         # was present in session
         return JsonResponse(
             {"nearby_pharmacies": nearby_pharmacies},
-            status=200,
+            status=status.HTTP_200_OK,
         )
     # not in session
-    with open("res.json") as json_file:
-        res_json = json.load(json_file)
+    with open("res.json") as jsonFile:
+        resJson = json.load(jsonFile)
         # async with aiohttp.ClientSession() as session:
         #     # send request till we get response
         #     res = await get_nearby_pharmacies(session, location)
@@ -225,8 +229,8 @@ async def pharmacy_get_nearby(request: HttpRequest):
         #         ]
         #         item_start_idx += item_skip
         #         nearby_pharmacy["image_url"] = items_json[item_start_idx - 1]["image_url"]
-        request.session["nearby_pharmacies"] = res_json["nearby_pharmacies"]
-        return JsonResponse(res_json, status=200)
+        request.session["nearby_pharmacies"] = resJson["nearby_pharmacies"]
+        return JsonResponse(resJson, status=status.HTTP_200_OK)
 
 
 async def pharmacy_get(request: HttpRequest, pharmacy_eloc: str):
@@ -235,14 +239,16 @@ async def pharmacy_get(request: HttpRequest, pharmacy_eloc: str):
     if nearby_pharmacies is None:
         return JsonResponse(
             {"Precondition Required": "call with location first"},
-            status=428,
+            status=status.HTTP_428_PRECONDITION_REQUIRED,
         )
     for nearby_pharmacy in nearby_pharmacies:
         if nearby_pharmacy["eLoc"] == pharmacy_eloc:
-            return JsonResponse({"pharmacy": nearby_pharmacy}, status=200)
+            return JsonResponse(
+                {"pharmacy": nearby_pharmacy}, status=status.HTTP_200_OK
+            )
     return JsonResponse(
         {"Not Found": f"pharmacy with eLoc {pharmacy_eloc} not found"},
-        status=404,
+        status=status.HTTP_404_NOT_FOUND,
     )
 
 
@@ -265,7 +271,7 @@ async def item(request: HttpRequest, item_id: int = None):
         if request.method == "GET":
             items = await sync_to_async(Item.objects.all)()
             items_json = await json_serializer(items)
-            return JsonResponse({"items": items_json}, status=200)
+            return JsonResponse({"items": items_json}, status=status.HTTP_200_OK)
     except Exception as _:
         print_exc()
     return default_json_response
