@@ -38,3 +38,8 @@ section {
 	border-color: #c3e6cb;
 	padding: 1rem;
 }
+
+.login-title {
+	font-family: "Bona Nova";
+	font-size: 36px;
+}

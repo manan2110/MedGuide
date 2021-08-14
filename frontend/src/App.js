@@ -5,6 +5,8 @@ import Navbar from "./Components/Navbar";
 import Home from "./Pages/Home";
 import Login from "./Pages/Login";
 import Cart from "./Pages/Cart";
+import Pharmacy from "./Pages/Pharmacy";
+import VideoCall from "./Pages/VideoCall";
 
 export default function App() {
 	const [pharmacies, setPharmacies] = useState([]);
@@ -32,10 +34,15 @@ export default function App() {
 				<Navbar />
 				<Route exact path='/login' component={Login} />
 				<Route exact path='/cart' component={Cart} />
+				<Route exact path='/pharmacy/:id'>
+					<Pharmacy pharmacies={pharmacies} />
+				</Route>
 				<Route exact path='/'>
 					<Home pharmacies={pharmacies} />
 				</Route>
+				<Route exact path='/video/' component={VideoCall} />
 			</Router>
 		</div>
 	);
 }
+

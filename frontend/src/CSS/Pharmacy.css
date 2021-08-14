@@ -1,0 +1,115 @@
+.pharmacy-container {
+	padding-top: 100px;
+	width: 100%;
+	display: flex;
+}
+
+.container-left {
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	flex: 0.7;
+	padding-left: 70px;
+}
+
+.container-right {
+	display: flex;
+	flex-direction: column;
+	flex: 0.3;
+	align-items: center;
+	padding-right: 100px;
+}
+
+.pharmacy-details-container {
+	box-shadow: 0px 4px 4px 4px rgba(0, 0, 0, 0.17);
+	width: 100%;
+	display: flex;
+	padding: 1rem;
+	flex-direction: column;
+	justify-content: space-evenly;
+	align-items: center;
+	text-align: center;
+}
+
+.pharmacy-details-medicine {
+	width: 100%;
+	font-family: "Lora";
+	font-size: 22px;
+	padding: 10px 0;
+}
+
+.pharmacy-details-name {
+	width: 100%;
+	font-family: "Lora";
+	font-size: 28px;
+}
+
+.goto-cart {
+	padding-top: 100px;
+}
+
+.goto-cart-button {
+	border: none;
+	border-radius: 5px;
+	background-color: black;
+	color: white;
+	font-family: "Bona Nova";
+	font-weight: 600;
+	font-size: 24px;
+	padding: 10px 20px;
+	cursor: pointer;
+}
+
+.medicine-item {
+	width: 90%;
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+	gap: 8px;
+	padding: 1rem 0;
+	background: #fff;
+	border-radius: 2px;
+	place-items: center;
+	margin-bottom: 8px;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.medicine-image {
+	max-height: 100px;
+	object-fit: contain;
+}
+
+.medicine-name {
+	font-family: "Lora";
+	font-size: 20px;
+	font-weight: 600;
+	text-decoration: none;
+	color: #171717;
+}
+
+.medicine-price {
+	font-family: "Lora";
+	font-size: 20px;
+	font-weight: 600;
+}
+
+.medcine-quantity {
+	font-family: "Lora";
+	font-size: 20px;
+	font-weight: 600;
+}
+
+.medicine-select {
+	padding: 10px 15px;
+}
+
+.medicine-addToCartBtn {
+	border: none;
+	border-radius: 5px;
+	background-color: black;
+	color: white;
+	font-family: "Bona Nova";
+	font-weight: 600;
+	font-size: 24px;
+	padding: 10px 20px;
+	cursor: pointer;
+}
