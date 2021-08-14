@@ -53,7 +53,7 @@ async def get_request_data(request: HttpRequest, method: str, **kwargs) -> dict:
     return data
 
 
-async def json_serializer(queryset: QuerySet) -> list[dict]:
+async def json_serializer(queryset: QuerySet) -> "list[dict]":
     qjsons_str = await sync_to_async(serialize)("json", queryset)
     qjsons = json.loads(qjsons_str)
     for qjson in qjsons:

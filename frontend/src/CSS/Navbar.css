@@ -1,0 +1,73 @@
+.navbar {
+	position: fixed;
+	width: 100%;
+	display: flex;
+	justify-content: space-around;
+	padding: 20px;
+	z-index: 2;
+	color: white;
+	background-color: black;
+	align-items: center;
+}
+
+.home-link {
+	text-decoration: none;
+	display: flex;
+	width: 100%;
+	justify-content: center;
+}
+
+.logo {
+	height: 100%;
+	font-size: 32px;
+	font-family: "El Messiri", sans-serif;
+	color: white;
+	text-decoration: none;
+	/* padding-left: 80px; */
+}
+
+.button-container {
+	display: flex;
+	align-items: center;
+	height: 100%;
+	width: 100%;
+	justify-content: center;
+	/* padding: 40px; */
+	text-align: center;
+}
+
+.login-btn {
+	font-family: "Bona Nova", serif;
+	/* margin-right: 80px; */
+	/* padding: 10px 20px; */
+	border: none;
+	font-size: 24px;
+	background-color: black;
+	outline: none;
+	color: white;
+	padding: 0 30px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.logout-btn {
+	font-family: "Bona Nova", serif;
+	border: none;
+	font-size: 24px;
+	background-color: black;
+	outline: none;
+	color: white;
+	padding: 0 30px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.login-btn:hover {
+	font-size: 27px;
+	transition: all 0.3s;
+}
+
+.logout-btn:hover {
+	font-size: 27px;
+	transition: all 0.3s;
+}
