@@ -3,10 +3,12 @@ import asyncio
 import environ
 import json
 import random
+from traceback import print_exc
 from django.conf import settings
 from django.http import HttpRequest, JsonResponse
 from django.db.models.query import QuerySet
 from django.core.serializers import serialize
+from rest_framework import status
 from asgiref.sync import sync_to_async
 from .models import *
 
@@ -66,6 +68,100 @@ async def json_serializer(queryset: QuerySet) -> "list[dict]":
 
 
 async def index(request: HttpRequest):
+    return default_json_response
+
+
+# cart related views
+
+
+async def cart_post(request: HttpRequest, cart: dict, _cart: Cart = None):
+    """POST method for cart endpoint"""
+    data = await get_request_data(request, "POST", id=int, amount=int)
+    if "Bad Request" in data:
+        return JsonResponse(
+            data,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    # check if item exists
+    item_pk = data["id"]
+    items = Item.objects.filter(pk=item_pk)
+    if not await sync_to_async(items.exists)():
+        return JsonResponse(
+            {"Not Found": f"item with id {item_pk} not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    # check if amount is valid
+    item_amount = data["amount"]
+    item = await sync_to_async(items.first)()
+    if item.amount < item_amount or item_amount < 0:
+        return JsonResponse(
+            {"Invalid range": f"{item.name} only {item.amount} available"},
+            status=status.HTTP_416_REQUESTED_RANGE_NOT_SATISFIABLE,
+        )
+    # update cart
+    item_in_cart = False
+    for i, cart_item in enumerate(cart["items"]):
+        if cart_item["id"] == item_pk:
+            cart["total_amount"] += item_amount - cart_item["amount"]
+            cart["total_price"] += (item_amount - cart_item["amount"]) * item.price
+            cart["items"][i]["amount"] = item_amount
+            if item_amount == 0:
+                cart["items"].pop(i)
+            item_in_cart = True
+            break
+    if not item_in_cart:
+        cart["total_amount"] += item_amount
+        cart["total_price"] += item_amount * item.price
+        cart["items"].append(
+            {
+                "id": item_pk,
+                "name": item.name,
+                "amount": item_amount,
+                "price": item.price,
+                "max_amount": item.amount,
+            }
+        )
+    if _cart is None:
+        # user not authenticated
+        request.session["cart"] = cart
+    else:
+        # user authenticated
+        _cart.cart_json = cart
+        await sync_to_async(_cart.save)()
+    return JsonResponse({"cart": cart})
+
+
+async def cart(request: HttpRequest):
+    try:
+        # initialize cart in session
+        if await sync_to_async(request.session.get)("cart") is None:
+            cart = {
+                "items": [],
+                "total_amount": 0,
+                "total_price": 0,
+            }
+            request.session["cart"] = cart
+        else:
+            cart = request.session["cart"]
+        # initialize cart in db if user authenticated
+        _cart = None
+        if await sync_to_async(is_authenticated)(request):
+            carts = await sync_to_async(Cart.objects.filter)(user=request.user)
+            if await sync_to_async(carts.exists)():
+                # already cart present in db
+                _cart = await sync_to_async(carts.first)()
+                cart = _cart.cart_json
+            else:
+                # no cart in db
+                _cart = Cart(user=request.user, cart_json=cart)
+                await sync_to_async(_cart.save)()
+                cart = _cart.cart_json
+        if request.method == "GET":
+            return JsonResponse({"cart": cart})
+        if request.method == "POST":
+            return await cart_post(request, cart, _cart)
+    except Exception as _:
+        print_exc()
     return default_json_response
 
 
