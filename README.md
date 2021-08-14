@@ -1,4 +1,50 @@
 # MedGuide
+## How to run 
+1. Clone the repo to your local system
+
+    ```git clone https://github.com/manan2110/MedGuide.git ```
+2. Create a virtual environment. You can use this [link](https://docs.python.org/3/library/venv.html) for reference.
+
+    ``` python -m venv venv ```
+3. Activate your virtual environment using : 
+    
+    ```venv/Scripts/activate``` 
+    
+    Here venv is the name of virtual environment.
+
+4. Install all the requirements required to run the project : 
+    
+    ```pip install -r requirements.txt```
+
+5. Run the django server : 
+    
+    ```python manage.py runserver```
+
+6. In another terminal change directory to server :
+
+    ``` cd server ``` 
+7. Install node module
+
+    ```npm i```
+8. Start the VC server
+
+    ```npm start ```
+
+6. In another terminal change directory to frontend :
+
+    ``` cd frontend ``` 
+7. Install node module
+
+    ```npm i```
+8. Start react server :
+ 
+    ```npm start```
+9. You can view the webapp by going to the [localhost:3000](http://127.0.0.1:3000/) on you web browser.
+
+## Documents 
+You can find the [api guide](https://github.com/manan2110/MedGuide/tree/master/api) in the api folder.
+
+You can find the [frontend guide](https://github.com/manan2110/MedGuide/tree/master/frontend) in the frontend folder.
 ## Inspiration
 During covid-19 people were under a lot of mental stress because they could not access medical facilities, which include access to medicines, consultancy and much more as freely as they could before. Also, previously doctors prescribed medicines without the knowledge of availability and cost of them near the patient which caused inconvenience to many people.
 
