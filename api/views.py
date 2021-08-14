@@ -8,7 +8,6 @@ from django.conf import settings
 from django.http import HttpRequest, JsonResponse
 from django.db.models.query import QuerySet
 from django.core.serializers import serialize
-from rest_framework import status
 from asgiref.sync import sync_to_async
 from .models import *
 
@@ -64,6 +63,11 @@ async def json_serializer(queryset: QuerySet) -> "list[dict]":
     return qjsons
 
 
+def is_authenticated(request: HttpRequest) -> bool:
+    """wrapper function for use with sync_to_async"""
+    return request.user.is_authenticated
+
+
 # Create your views here.
 
 
@@ -80,7 +84,7 @@ async def cart_post(request: HttpRequest, cart: dict, _cart: Cart = None):
     if "Bad Request" in data:
         return JsonResponse(
             data,
-            status=status.HTTP_400_BAD_REQUEST,
+            status=400,
         )
     # check if item exists
     item_pk = data["id"]
@@ -88,7 +92,7 @@ async def cart_post(request: HttpRequest, cart: dict, _cart: Cart = None):
     if not await sync_to_async(items.exists)():
         return JsonResponse(
             {"Not Found": f"item with id {item_pk} not found"},
-            status=status.HTTP_404_NOT_FOUND,
+            status=404,
         )
     # check if amount is valid
     item_amount = data["amount"]
@@ -96,7 +100,7 @@ async def cart_post(request: HttpRequest, cart: dict, _cart: Cart = None):
     if item.amount < item_amount or item_amount < 0:
         return JsonResponse(
             {"Invalid range": f"{item.name} only {item.amount} available"},
-            status=status.HTTP_416_REQUESTED_RANGE_NOT_SATISFIABLE,
+            status=416,
         )
     # update cart
     item_in_cart = False
@@ -183,7 +187,7 @@ async def get_nearby_pharmacies(session: aiohttp.ClientSession, location: str) -
         return await res.json()
 
 
-async def pharmacy(request: HttpRequest):
+async def pharmacy_get_nearby(request: HttpRequest):
     data, nearby_pharmacies = await asyncio.gather(
         get_request_data(request, "GET", latitude=str, longitude=str),
         sync_to_async(request.session.get)("nearby_pharmacies"),
@@ -201,23 +205,67 @@ async def pharmacy(request: HttpRequest):
             status=200,
         )
     # not in session
-    async with aiohttp.ClientSession() as session:
-        # send request till we get response
-        res = await get_nearby_pharmacies(session, location)
-        while "suggestedLocations" not in res:
-            res = await get_nearby_pharmacies(session, location)
-        nearby_pharmacies = res["suggestedLocations"]
-        # fill response with images and items
-        items = await sync_to_async(Item.objects.all)()
-        items_json = await json_serializer(items)
-        random.shuffle(items_json)
-        item_start_idx = 0
-        item_skip = len(items_json) // len(nearby_pharmacies)
-        for nearby_pharmacy in nearby_pharmacies:
-            nearby_pharmacy["items"] = items_json[
-                item_start_idx : item_start_idx + item_skip
-            ]
-            item_start_idx += item_skip
-            nearby_pharmacy["image_url"] = items_json[item_start_idx - 1]["image_url"]
-        request.session["nearby_pharmacies"] = nearby_pharmacies
-        return JsonResponse({"nearby_pharmacies": nearby_pharmacies}, status=200)
+    with open("res.json") as json_file:
+        res_json = json.load(json_file)
+        # async with aiohttp.ClientSession() as session:
+        #     # send request till we get response
+        #     res = await get_nearby_pharmacies(session, location)
+        #     while "suggestedLocations" not in res:
+        #         res = await get_nearby_pharmacies(session, location)
+        #     nearby_pharmacies = res["suggestedLocations"]
+        #     # fill response with images and items
+        #     items = await sync_to_async(Item.objects.all)()
+        #     items_json = await json_serializer(items)
+        #     random.shuffle(items_json)
+        #     item_start_idx = 0
+        #     item_skip = len(items_json) // len(nearby_pharmacies)
+        #     for nearby_pharmacy in nearby_pharmacies:
+        #         nearby_pharmacy["items"] = items_json[
+        #             item_start_idx : item_start_idx + item_skip
+        #         ]
+        #         item_start_idx += item_skip
+        #         nearby_pharmacy["image_url"] = items_json[item_start_idx - 1]["image_url"]
+        request.session["nearby_pharmacies"] = res_json["nearby_pharmacies"]
+        return JsonResponse(res_json, status=200)
+
+
+async def pharmacy_get(request: HttpRequest, pharmacy_eloc: str):
+    nearby_pharmacies = await sync_to_async(request.session.get)("nearby_pharmacies")
+    print(await sync_to_async(request.session.items)())
+    if nearby_pharmacies is None:
+        return JsonResponse(
+            {"Precondition Required": "call with location first"},
+            status=428,
+        )
+    for nearby_pharmacy in nearby_pharmacies:
+        if nearby_pharmacy["eLoc"] == pharmacy_eloc:
+            return JsonResponse({"pharmacy": nearby_pharmacy}, status=200)
+    return JsonResponse(
+        {"Not Found": f"pharmacy with eLoc {pharmacy_eloc} not found"},
+        status=404,
+    )
+
+
+async def pharmacy(request: HttpRequest, pharmacy_eloc: str = None):
+    try:
+        if request.method == "GET":
+            if pharmacy_eloc is not None:
+                return await pharmacy_get(request, pharmacy_eloc)
+            return await pharmacy_get_nearby(request)
+    except Exception as _:
+        print_exc()
+    return default_json_response
+
+
+# item based views
+
+
+async def item(request: HttpRequest, item_id: int = None):
+    try:
+        if request.method == "GET":
+            items = await sync_to_async(Item.objects.all)()
+            items_json = await json_serializer(items)
+            return JsonResponse({"items": items_json}, status=200)
+    except Exception as _:
+        print_exc()
+    return default_json_response
