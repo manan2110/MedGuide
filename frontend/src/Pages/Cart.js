@@ -23,7 +23,6 @@ export default function Cart() {
 	return (
 		<div className='cartscreen__container'>
 			<div className='cartscreen__left'>
-				{console.log(cartItem)}
 				{cartItem && cartItem.map((curr) => <CartItem curr={curr} />)}
 			</div>
 			<div className='cartscreen__right'>

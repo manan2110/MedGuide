@@ -16,7 +16,6 @@ const Login = () => {
 			identifierType: "email",
 			apiKey: "1becc7cb-07ea-4477-8d7f-2c4f4581febb",
 			onSuccess: (payload) => {
-				console.log("Payload : " + JSON.stringify(payload));
 				setUserLoggedIn(true);
 				setPayload(payload);
 				localStorage.setItem("token", payload.verification_token);
