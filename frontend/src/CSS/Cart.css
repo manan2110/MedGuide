@@ -1,5 +1,6 @@
 :root {
 	--pri-clr: #7fffd4;
+	--sec-clr: #e0ffff;
 }
 
 * {
@@ -11,6 +12,7 @@
 	width: 100%;
 	display: flex;
 	justify-content: space-around;
+	background-color: var(--sec-clr);
 }
 
 .cartscreen__left {
@@ -30,7 +32,7 @@
 
 .cartscreen__info {
 	border-radius: 0.25em;
-	box-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 	width: 100%;
 	display: flex;
 	margin: 1em;
@@ -40,6 +42,7 @@
 	text-align: center;
 	font-size: large;
 	font-family: "Lora";
+	background-color: white;
 }
 
 .checkout {

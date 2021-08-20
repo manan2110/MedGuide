@@ -1,5 +1,6 @@
 :root {
 	--pri-clr: #7fffd4;
+	--sec-clr: #e0ffff;
 }
 
 * {
@@ -16,6 +17,7 @@
 	grid-template-columns: 1fr 2fr 2fr 2fr;
 	gap: 1em;
 	text-align: center;
+	background-color: white;
 }
 
 .pharmacy-details {
@@ -37,7 +39,7 @@
 .pharmacy-name:after {
 	content: "";
 	display: block;
-	height: 0.125em;
+	height: 0.1em;
 	left: 0;
 	position: absolute;
 	background: var(--pri-clr);

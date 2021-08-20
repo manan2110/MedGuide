@@ -1,3 +1,8 @@
+:root {
+	--pri-clr: #7fffd4;
+	--sec-clr: #e0ffff;
+}
+
 .cartitem {
 	display: grid;
 	grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -7,6 +12,7 @@
 	place-items: center;
 	margin: 1em;
 	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+	background-color: white;
 }
 
 .cart__image {
