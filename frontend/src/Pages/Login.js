@@ -1,12 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import "../CSS/Login.css";
-import { useState, useEffect } from "react";
 import Sawo from "sawo";
 
-const Login = () => {
-	const [isUserLoggedIn, setUserLoggedIn] = useState(false);
-	const [payload, setPayload] = useState({});
+export default function Login({ user, setUser }) {
 	const history = useHistory();
 
 	useEffect(() => {
@@ -16,34 +13,27 @@ const Login = () => {
 			identifierType: "email",
 			apiKey: "1becc7cb-07ea-4477-8d7f-2c4f4581febb",
 			onSuccess: (payload) => {
-				setUserLoggedIn(true);
-				setPayload(payload);
 				localStorage.setItem("token", payload.verification_token);
+				setUser(payload.user_id);
 				history.push("/");
 			},
 		};
 		let sawo = new Sawo(config);
 		sawo.showForm();
-		if (localStorage.getItem("token")) {
-			setUserLoggedIn(true);
-		}
-	}, []);
+	}, [history, setUser]);
+
 	return (
-		<div className='containerStyle'>
+		<div className="containerStyle">
 			<section>
-				<h2 className='login-title'>MedGuide Login</h2>
-				{!isUserLoggedIn ? (
-					<div className='formContainer' id='sawo-container'></div>
-				) : (
-					<div className='loggedin'>
-						<h2>User Successful Login</h2>
-						<div>UserId: {payload.user_id}</div>
-						<div>Verification Token: {payload.verification_token}</div>
+				<h2 className="login-title">MedGuide Login</h2>
+				{user ? (
+					<div className="loggedin">
+						<h2>User Logged In</h2>
 					</div>
+				) : (
+					<div className="formContainer" id="sawo-container"></div>
 				)}
 			</section>
 		</div>
 	);
-};
-
-export default Login;
+}

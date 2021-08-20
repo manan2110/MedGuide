@@ -1,29 +1,62 @@
+:root {
+	--pri-clr: #7fffd4;
+}
+
+* {
+	box-sizing: border-box;
+}
+
 .card-container {
-	height: 100px;
-	box-shadow: 0px 4px 4px 4px rgba(0, 0, 0, 0.17);
-	margin-bottom: 15px;
+	box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.4);
+	margin: 1em;
+	padding: 2em;
 	width: 80%;
-	display: flex;
-	align-items: center;
-	justify-content: space-evenly;
-	padding-left: 50px;
+	display: grid;
+	place-items: center;
+	grid-template-columns: 1fr 2fr 2fr 2fr;
+	gap: 1em;
+	text-align: center;
 }
 
 .pharmacy-details {
-	width: 30%;
-	font-size: 22px;
+	font-size: medium;
 	font-family: "Lora";
 }
 
+.pharmacy-details-distance {
+	font-size: large;
+}
+
 .pharmacy-name {
-	font-size: 28px;
-	font-weight: 700;
+	font-size: x-large;
+	font-family: "Lora";
+	transition: all 250ms;
+	position: relative;
+}
+
+.pharmacy-name:after {
+	content: "";
+	display: block;
+	height: 0.125em;
+	left: 0;
+	position: absolute;
+	background: var(--pri-clr);
+	transition: width 0.3s ease 0s, left 0.3s ease 0s;
+	width: 0;
+}
+
+.pharmacy-name:hover:after {
+	width: 100%;
 }
 
 .pharmacy-link {
 	text-decoration: none;
-	width: 30%;
-	font-size: 22px;
-	font-family: "Lora";
 	color: black;
+}
+
+@media only screen and (max-width: 768px) {
+	.card-container {
+		display: flex;
+		flex-direction: column;
+	}
 }

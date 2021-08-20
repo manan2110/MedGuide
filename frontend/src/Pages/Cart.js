@@ -1,38 +1,40 @@
 import React, { useEffect, useState } from "react";
-import Axios from "axios";
 import "../CSS/Cart.css";
 import CartItem from "../Components/CartItem";
 
-export default function Cart() {
-	const [cartItem, setCartItems] = useState(null);
-	const [cartAmount, setCartAmount] = useState(null);
-	const [cartPrice, setCartPrice] = useState(null);
+export default function Cart({ cart, setCart, items }) {
+	const [cartAmount, setCartAmount] = useState(0);
+	const [cartPrice, setCartPrice] = useState(0);
 
 	useEffect(() => {
-		async function getCartData() {
-			await Axios.get("http://localhost:8000/api/cart/", {
-				withCredentials: true,
-			}).then((res) => {
-				setCartItems(res.data.cart.items);
-				setCartAmount(res.data.cart.total_amount);
-				setCartPrice(Math.round(res.data.cart.total_price));
-			});
+		let _cartAmount = 0;
+		let _cartPrice = 0;
+		for (let itemPk in cart) {
+			_cartAmount += parseInt(cart[itemPk]);
+			_cartPrice += parseInt(cart[itemPk]) * items[itemPk].price;
 		}
-		getCartData();
-	}, []);
+		setCartAmount(_cartAmount);
+		setCartPrice(_cartPrice);
+	}, [cart, items]);
+
 	return (
-		<div className='cartscreen__container'>
-			<div className='cartscreen__left'>
-				{cartItem && cartItem.map((curr) => <CartItem curr={curr} />)}
+		<div className="cartscreen__container">
+			<div className="cartscreen__left">
+				{Object.keys(cart) &&
+					Object.keys(cart).map((itemPk) => (
+						<CartItem
+							cart={cart}
+							item={items[itemPk]}
+							setCart={setCart}
+						/>
+					))}
 			</div>
-			<div className='cartscreen__right'>
-				<div className='cartscreen__info'>
-					<p>Subtotal ({cartAmount}) items</p>
-					<p>Rs {cartPrice}</p>
+			<div className="cartscreen__right">
+				<div className="cartscreen__info">
+					<span>Total Items: {cartAmount}</span>
+					<span>Total Price: Rs {cartPrice.toFixed(2)}</span>
 				</div>
-				<div>
-					<button className='checkout'>Proceed to checkout</button>
-				</div>
+				<button className="checkout">Proceed to checkout</button>
 			</div>
 		</div>
 	);
